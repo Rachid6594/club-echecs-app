@@ -510,7 +510,7 @@ class AdminNotificationListView(SupabaseAdminAPIView):
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    select n.id, n.type, n.title, n.body, n.is_read, n.created_at,
+                    select n.id, n.type, n.title, n.body, (n.read_at is not null) as is_read, n.created_at,
                            au.username
                     from public.notifications n
                     left join public.app_users au on au.id = n.user_id
