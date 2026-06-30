@@ -1,0 +1,12 @@
+name: club_echecs_mobile
+description: Mobile app for Club Echecs App.
+publish_to: "none"
+version: 0.0.0
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies: {}
+
+dev_dependencies: {}
+

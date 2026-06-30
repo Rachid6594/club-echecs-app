@@ -1,0 +1,2 @@
+# Filled during Sprint 02 - Backend Django foundation.
+

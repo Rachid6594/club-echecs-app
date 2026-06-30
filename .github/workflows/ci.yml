@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "sprint/**"
+
+jobs:
+  structure:
+    name: Repository structure
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validate Sprint 00 structure
+        shell: bash
+        run: |
+          test -d backend
+          test -d admin-web
+          test -d mobile
+          test -d supabase/migrations
+          test -d supabase/policies
+          test -d supabase/functions
+          test -d docs/validations
+          test -f .env.example
+          test -f README.md
+

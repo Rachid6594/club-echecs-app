@@ -1,0 +1,8 @@
+{
+  "name": "club-echecs-admin-web",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Admin web tests start in Sprint 16\""
+  }
+}
+
