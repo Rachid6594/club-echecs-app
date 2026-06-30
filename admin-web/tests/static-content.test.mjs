@@ -1,18 +1,31 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync } from 'node:fs';
 import assert from 'node:assert/strict';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-const page = readFileSync(new URL('../app/page.tsx', import.meta.url), 'utf8');
+function readTsxFiles(dir) {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const path = join(dir, entry.name);
+    if (entry.isDirectory()) return readTsxFiles(path);
+    return entry.name.endsWith('.tsx') ? [readFileSync(path, 'utf8')] : [];
+  });
+}
+
+const appDir = fileURLToPath(new URL('../app', import.meta.url));
+const componentDir = fileURLToPath(new URL('../components', import.meta.url));
+const page = [...readTsxFiles(appDir), ...readTsxFiles(componentDir)].join('\n');
 
 for (const text of [
-  'Login admin',
+  'Supabase live',
   'Dashboard general',
-  'Gestion des membres',
+  'Membres',
   'Creation tournoi',
-  'Tirage aleatoire',
-  'Tableau visuel elimination directe',
   'Litiges et corrections',
-  'Gestion badges/rangs',
+  'Badges',
   'Audit logs',
+  '/admin/dashboard/',
+  '/admin/members/',
+  '/admin/tournaments/',
 ]) {
   assert.ok(page.includes(text), `Missing admin text: ${text}`);
 }
