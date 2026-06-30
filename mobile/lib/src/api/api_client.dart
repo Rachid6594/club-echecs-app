@@ -83,6 +83,21 @@ class ApiClient {
           {'name': 'Coupe du Club', 'format': 'single_elimination', 'status': 'registration_open'},
         ];
       }
+      if (path.contains('rankings')) {
+        return [
+          {'display_name': 'Rachid', 'points': 120, 'rank_name': 'Novice I'},
+        ];
+      }
+      if (path.contains('notifications')) {
+        return [
+          {'title': 'Invitation recue', 'body': 'Awa vous invite a jouer.'},
+        ];
+      }
+      if (path.contains('live-matches')) {
+        return [
+          {'white_username': 'Blancs', 'black_username': 'Noirs', 'status': 'active', 'tournament_name': 'Table 1'},
+        ];
+      }
       return <dynamic>[];
     }
     final response = await _httpClient.get(Uri.parse('$baseUrl$path'));

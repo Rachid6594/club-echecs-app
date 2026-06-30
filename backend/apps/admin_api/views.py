@@ -459,6 +459,70 @@ class AdminDisputeListView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
+class AdminLiveMatchListView(SupabaseAdminAPIView):
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select m.id, m.status, m.scheduled_at, m.white_score, m.black_score,
+                           white_user.username as white_username,
+                           black_user.username as black_username,
+                           t.name as tournament_name
+                    from public.matches m
+                    left join public.app_users white_user on white_user.id = m.white_player_id
+                    left join public.app_users black_user on black_user.id = m.black_player_id
+                    left join public.tournaments t on t.id = m.tournament_id
+                    where m.status in ('scheduled', 'active', 'disputed')
+                    order by m.scheduled_at nulls last, m.created_at desc
+                    limit 100
+                    """
+                )
+                return Response({"results": dictfetchall(cursor)})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AdminRankingListView(SupabaseAdminAPIView):
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select r.id, r.user_id, r.points, r.wins, r.draws, r.losses,
+                           r.games_played, r.rank_position, r.rank_name,
+                           au.username, up.display_name
+                    from public.rankings r
+                    join public.app_users au on au.id = r.user_id
+                    left join public.user_profiles up on up.user_id = au.id
+                    order by r.points desc, r.wins desc, au.username asc
+                    limit 100
+                    """
+                )
+                return Response({"results": dictfetchall(cursor)})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AdminNotificationListView(SupabaseAdminAPIView):
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select n.id, n.type, n.title, n.body, n.is_read, n.created_at,
+                           au.username
+                    from public.notifications n
+                    left join public.app_users au on au.id = n.user_id
+                    order by n.created_at desc
+                    limit 100
+                    """
+                )
+                return Response({"results": dictfetchall(cursor)})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
 class AdminBadgeListView(SupabaseAdminAPIView):
     def get(self, request):
         try:

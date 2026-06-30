@@ -9,6 +9,9 @@ from apps.admin_api.views import (
     AdminDisputeListView,
     AdminMemberListCreateView,
     AdminTournamentListCreateView,
+    AdminLiveMatchListView,
+    AdminNotificationListView,
+    AdminRankingListView,
 )
 
 
@@ -18,6 +21,9 @@ urlpatterns = [
     path("admin/dashboard/", AdminDashboardView.as_view(), name="admin-dashboard"),
     path("admin/members/", AdminMemberListCreateView.as_view(), name="admin-members"),
     path("admin/tournaments/", AdminTournamentListCreateView.as_view(), name="admin-tournaments"),
+    path("admin/live-matches/", AdminLiveMatchListView.as_view(), name="admin-live-matches"),
+    path("admin/rankings/", AdminRankingListView.as_view(), name="admin-rankings"),
+    path("admin/notifications/", AdminNotificationListView.as_view(), name="admin-notifications"),
     path("admin/disputes/", AdminDisputeListView.as_view(), name="admin-disputes"),
     path("admin/badges/", AdminBadgeListView.as_view(), name="admin-badges"),
     path("admin/audit-logs/", AdminAuditLogListView.as_view(), name="admin-audit-logs"),
