@@ -1,6 +1,8 @@
 import json
 import uuid
 
+from django.core import signing
+from django.contrib.auth.hashers import check_password, make_password
 from django.db import DatabaseError, connection, transaction
 from django.utils import timezone
 from rest_framework import status
@@ -112,6 +114,121 @@ def fetch_dashboard_payload():
 
 class SupabaseAdminAPIView(APIView):
     permission_classes = [AllowAny]
+
+
+def serialize_app_user(row: dict):
+    return {
+        "id": row["id"],
+        "username": row["username"],
+        "email": row["email"],
+        "role": row["role"],
+        "display_name": row.get("display_name"),
+        "rank_name": row.get("rank_name", "Novice I"),
+        "points": row.get("points", 0),
+    }
+
+
+class AppRegisterView(SupabaseAdminAPIView):
+    def post(self, request):
+        username = (request.data.get("username") or "").strip()
+        email = (request.data.get("email") or "").strip().lower()
+        password = request.data.get("password") or ""
+        display_name = (request.data.get("display_name") or username).strip()
+
+        if len(username) < 3:
+            return Response({"detail": "Le nom utilisateur doit contenir au moins 3 caracteres."}, status=status.HTTP_400_BAD_REQUEST)
+        if len(password) < 8:
+            return Response({"detail": "Le mot de passe doit contenir au moins 8 caracteres."}, status=status.HTTP_400_BAD_REQUEST)
+        if "@" not in email:
+            return Response({"detail": "Email invalide."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_id = uuid.uuid4()
+        profile_id = uuid.uuid4()
+        member_id = uuid.uuid4()
+        ranking_id = uuid.uuid4()
+
+        try:
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        insert into public.app_users (
+                          id, email, username, role, is_active, password_hash, created_at, updated_at
+                        )
+                        values (%s, %s, %s, 'player', true, %s, now(), now())
+                        returning id, email, username, role
+                        """,
+                        [user_id, email, username, make_password(password)],
+                    )
+                    user = dictfetchall(cursor)[0]
+                    cursor.execute(
+                        """
+                        insert into public.user_profiles (
+                          id, user_id, display_name, total_points, total_wins, total_draws,
+                          total_losses, current_streak, best_streak, created_at, updated_at
+                        )
+                        values (%s, %s, %s, 0, 0, 0, 0, 0, 0, now(), now())
+                        """,
+                        [profile_id, user_id, display_name],
+                    )
+                    cursor.execute(
+                        """
+                        insert into public.club_members (
+                          id, user_id, status, joined_at, notes, created_at, updated_at
+                        )
+                        values (%s, %s, 'active', now(), '', now(), now())
+                        """,
+                        [member_id, user_id],
+                    )
+                    cursor.execute(
+                        """
+                        insert into public.rankings (
+                          id, user_id, points, wins, draws, losses, games_played,
+                          rank_position, rank_name, recomputed_at, updated_at
+                        )
+                        values (%s, %s, 0, 0, 0, 0, 0, null, 'Novice I', now(), now())
+                        """,
+                        [ranking_id, user_id],
+                    )
+                log_admin_action("register_user", "app_user", user_id, {"username": username})
+            user.update({"display_name": display_name, "rank_name": "Novice I", "points": 0})
+            token = signing.dumps({"user_id": str(user_id), "role": "player"}, salt="app-auth")
+            return Response({"user": serialize_app_user(user), "tokens": {"access": token}}, status=status.HTTP_201_CREATED)
+        except DatabaseError as error:
+            message = str(error)
+            if "duplicate" in message.lower() or "unique" in message.lower():
+                return Response({"detail": "Email ou nom utilisateur deja utilise."}, status=status.HTTP_400_BAD_REQUEST)
+            return db_error_response(error)
+
+
+class AppLoginView(SupabaseAdminAPIView):
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        password = request.data.get("password") or ""
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select au.id, au.username, au.email, au.role, au.password_hash,
+                           up.display_name,
+                           coalesce(r.rank_name, 'Novice I') as rank_name,
+                           coalesce(r.points, 0)::int as points
+                    from public.app_users au
+                    left join public.user_profiles up on up.user_id = au.id
+                    left join public.rankings r on r.user_id = au.id
+                    where lower(au.email) = %s and au.is_active = true
+                    limit 1
+                    """,
+                    [email],
+                )
+                rows = dictfetchall(cursor)
+                if not rows or not rows[0].get("password_hash") or not check_password(password, rows[0]["password_hash"]):
+                    return Response({"detail": "Identifiants invalides."}, status=status.HTTP_400_BAD_REQUEST)
+                cursor.execute("update public.app_users set last_login_at = now(), updated_at = now() where id = %s", [rows[0]["id"]])
+            token = signing.dumps({"user_id": str(rows[0]["id"]), "role": rows[0]["role"]}, salt="app-auth")
+            return Response({"user": serialize_app_user(rows[0]), "tokens": {"access": token}})
+        except DatabaseError as error:
+            return db_error_response(error)
 
 
 class AdminDashboardView(SupabaseAdminAPIView):

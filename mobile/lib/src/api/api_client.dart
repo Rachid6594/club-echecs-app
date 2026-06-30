@@ -7,7 +7,7 @@ class ApiClient {
     http.Client? httpClient,
     this.baseUrl = const String.fromEnvironment(
       'MOBILE_API_BASE_URL',
-      defaultValue: 'http://localhost:8000/api',
+      defaultValue: 'https://club-echecs-api.vercel.app/api',
     ),
   }) : _httpClient = httpClient ?? http.Client();
 
@@ -40,6 +40,54 @@ class ApiClient {
       }),
     );
     return _decode(response);
+  }
+
+  Future<Map<String, dynamic>> appLogin(String email, String password) async {
+    final response = await _httpClient.post(
+      Uri.parse('$baseUrl/app/auth/login/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({'email': email, 'password': password}),
+    );
+    return _decode(response);
+  }
+
+  Future<Map<String, dynamic>> appRegister({
+    required String username,
+    required String email,
+    required String password,
+    required String displayName,
+  }) async {
+    final response = await _httpClient.post(
+      Uri.parse('$baseUrl/app/auth/register/'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'username': username,
+        'email': email,
+        'password': password,
+        'display_name': displayName,
+      }),
+    );
+    return _decode(response);
+  }
+
+  Future<List<dynamic>> getList(String path) async {
+    if (const bool.fromEnvironment('USE_FAKE_AUTH')) {
+      if (path.contains('badges')) {
+        return [
+          {'name': 'Premiere victoire'},
+          {'name': 'Champion de tournoi'},
+        ];
+      }
+      if (path.contains('tournaments')) {
+        return [
+          {'name': 'Coupe du Club', 'format': 'single_elimination', 'status': 'registration_open'},
+        ];
+      }
+      return <dynamic>[];
+    }
+    final response = await _httpClient.get(Uri.parse('$baseUrl$path'));
+    final body = _decode(response);
+    return (body['results'] as List<dynamic>?) ?? <dynamic>[];
   }
 
   Map<String, dynamic> _decode(http.Response response) {

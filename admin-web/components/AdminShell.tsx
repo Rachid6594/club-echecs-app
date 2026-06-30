@@ -7,6 +7,7 @@ const navItems = [
   { href: '/disputes', label: 'Litiges' },
   { href: '/badges', label: 'Badges' },
   { href: '/audit', label: 'Audit logs' },
+  { href: '/login', label: 'Connexion' },
 ];
 
 export function AdminShell({ children }: { children: React.ReactNode }) {

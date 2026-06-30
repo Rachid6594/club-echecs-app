@@ -1,35 +1,54 @@
 import 'package:flutter/material.dart';
 
-class BadgesScreen extends StatelessWidget {
+import '../api/api_client.dart';
+
+class BadgesScreen extends StatefulWidget {
   const BadgesScreen({super.key});
 
   static const routeName = '/badges';
 
   @override
+  State<BadgesScreen> createState() => _BadgesScreenState();
+}
+
+class _BadgesScreenState extends State<BadgesScreen> {
+  late final Future<List<dynamic>> _badges = ApiClient().getList('/admin/badges/');
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('Badges')),
-      body: GridView.count(
-        padding: const EdgeInsets.all(16),
-        crossAxisCount: 2,
-        mainAxisSpacing: 12,
-        crossAxisSpacing: 12,
-        childAspectRatio: 1.15,
-        children: const [
-          _BadgeTile(asset: 'assets/badges/novice_i.svg', label: 'Novice I'),
-          _BadgeTile(asset: 'assets/badges/first_win.svg', label: 'Premiere victoire'),
-          _BadgeTile(asset: 'assets/badges/tournament_champion.svg', label: 'Champion'),
-          _BadgeTile(asset: 'assets/badges/legende.svg', label: 'Legende'),
-        ],
+      body: FutureBuilder<List<dynamic>>(
+        future: _badges,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(child: Text('Badges indisponibles: ${snapshot.error}'));
+          }
+          final badges = snapshot.data ?? [];
+          if (badges.isEmpty) return const Center(child: Text('Aucun badge dans Supabase.'));
+          return GridView.count(
+            padding: const EdgeInsets.all(16),
+            crossAxisCount: 2,
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 1.15,
+            children: [
+              for (final item in badges)
+                _BadgeTile(label: (item as Map<String, dynamic>)['name']?.toString() ?? 'Badge'),
+            ],
+          );
+        },
       ),
     );
   }
 }
 
 class _BadgeTile extends StatelessWidget {
-  const _BadgeTile({required this.asset, required this.label});
+  const _BadgeTile({required this.label});
 
-  final String asset;
   final String label;
 
   @override
@@ -47,4 +66,3 @@ class _BadgeTile extends StatelessWidget {
     );
   }
 }
-

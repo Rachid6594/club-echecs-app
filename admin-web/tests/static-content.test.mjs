@@ -23,9 +23,13 @@ for (const text of [
   'Litiges et corrections',
   'Badges',
   'Audit logs',
+  'Connexion admin',
+  'Creer un compte',
   '/admin/dashboard/',
   '/admin/members/',
   '/admin/tournaments/',
+  '/app/auth/login/',
+  '/app/auth/register/',
 ]) {
   assert.ok(page.includes(text), `Missing admin text: ${text}`);
 }
