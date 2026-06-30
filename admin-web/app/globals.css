@@ -1,0 +1,44 @@
+:root {
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --muted: #64748b;
+  --blue: #2563eb;
+  --gold: #d4af37;
+  --line: #e2e8f0;
+  --panel: #ffffff;
+}
+
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: Inter, system-ui, sans-serif; }
+button, input, select { font: inherit; }
+button { border: 0; border-radius: 8px; padding: 10px 14px; background: var(--blue); color: white; font-weight: 700; }
+input, select { width: 100%; margin-top: 6px; padding: 10px; border: 1px solid var(--line); border-radius: 8px; background: white; }
+label { display: block; margin-bottom: 12px; color: var(--muted); }
+
+.shell { min-height: 100vh; display: grid; grid-template-columns: 250px 1fr; }
+.sidebar { background: #0f172a; color: white; padding: 24px; }
+.sidebar h1 { font-size: 22px; margin: 0 0 28px; }
+.sidebar nav { display: grid; gap: 10px; }
+.sidebar a { color: #e2e8f0; padding: 10px 0; }
+.content { padding: 24px; }
+.topbar { display: flex; justify-content: space-between; align-items: center; gap: 16px; margin-bottom: 20px; }
+.topbar h2 { margin: 0; font-size: 28px; }
+.eyebrow { margin: 0 0 4px; color: var(--gold); font-weight: 800; text-transform: uppercase; font-size: 12px; }
+.metrics { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 20px; }
+.metrics article, .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 16px; }
+.metrics span { display: block; color: var(--muted); }
+.metrics strong { font-size: 30px; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.panel h3 { margin: 0 0 12px; }
+.panel p { color: var(--muted); }
+.wide { grid-column: 1 / -1; }
+.bracket { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.bracket span { border: 1px solid var(--line); border-radius: 8px; padding: 12px; background: #f8fafc; }
+
+@media (max-width: 800px) {
+  .shell { grid-template-columns: 1fr; }
+  .sidebar { position: static; }
+  .metrics, .grid { grid-template-columns: 1fr; }
+  .topbar { align-items: flex-start; flex-direction: column; }
+}
+
