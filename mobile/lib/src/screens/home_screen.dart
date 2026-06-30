@@ -2,7 +2,11 @@ import 'package:flutter/material.dart';
 
 import 'game_screen.dart';
 import 'live_matches_screen.dart';
+import 'badges_screen.dart';
+import 'notifications_screen.dart';
 import 'profile_screen.dart';
+import 'rankings_screen.dart';
+import 'tournaments_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -33,8 +37,10 @@ class HomeScreen extends StatelessWidget {
           const _HomeTile(icon: Icons.mail, label: 'Invitations'),
           _HomeTile(icon: Icons.grid_on, label: 'Parties', onTap: () => Navigator.pushNamed(context, GameScreen.routeName)),
           _HomeTile(icon: Icons.visibility, label: 'En direct', onTap: () => Navigator.pushNamed(context, LiveMatchesScreen.routeName)),
-          const _HomeTile(icon: Icons.emoji_events, label: 'Tournois'),
-          const _HomeTile(icon: Icons.leaderboard, label: 'Classement'),
+          _HomeTile(icon: Icons.emoji_events, label: 'Tournois', onTap: () => Navigator.pushNamed(context, TournamentsScreen.routeName)),
+          _HomeTile(icon: Icons.leaderboard, label: 'Classement', onTap: () => Navigator.pushNamed(context, RankingsScreen.routeName)),
+          _HomeTile(icon: Icons.workspace_premium, label: 'Badges', onTap: () => Navigator.pushNamed(context, BadgesScreen.routeName)),
+          _HomeTile(icon: Icons.notifications, label: 'Notifications', onTap: () => Navigator.pushNamed(context, NotificationsScreen.routeName)),
         ],
       ),
     );

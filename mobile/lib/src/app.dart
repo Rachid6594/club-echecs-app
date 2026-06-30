@@ -1,13 +1,18 @@
 import 'package:flutter/material.dart';
 
+import 'screens/badges_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/game_screen.dart';
 import 'screens/live_matches_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/notifications_screen.dart';
 import 'screens/profile_screen.dart';
+import 'screens/rankings_screen.dart';
 import 'screens/register_screen.dart';
 import 'screens/splash_screen.dart';
 import 'screens/spectator_screen.dart';
+import 'screens/tournament_detail_screen.dart';
+import 'screens/tournaments_screen.dart';
 
 class ClubEchecsApp extends StatelessWidget {
   const ClubEchecsApp({super.key});
@@ -37,6 +42,11 @@ class ClubEchecsApp extends StatelessWidget {
         GameScreen.routeName: (_) => const GameScreen(),
         LiveMatchesScreen.routeName: (_) => const LiveMatchesScreen(),
         SpectatorScreen.routeName: (_) => const SpectatorScreen(),
+        TournamentsScreen.routeName: (_) => const TournamentsScreen(),
+        TournamentDetailScreen.routeName: (_) => const TournamentDetailScreen(),
+        RankingsScreen.routeName: (_) => const RankingsScreen(),
+        BadgesScreen.routeName: (_) => const BadgesScreen(),
+        NotificationsScreen.routeName: (_) => const NotificationsScreen(),
       },
     );
   }

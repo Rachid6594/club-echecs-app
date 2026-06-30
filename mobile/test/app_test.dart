@@ -84,4 +84,54 @@ void main() {
     expect(find.text('Vue spectateur'), findsOneWidget);
     expect(find.textContaining('vues totales'), findsOneWidget);
   });
+
+  testWidgets('home opens tournaments and bracket preview', (tester) async {
+    await tester.pumpWidget(const ClubEchecsApp());
+    await tester.tap(find.text('Entrer'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Se connecter'));
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(GridView), const Offset(0, -260));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Tournois'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Coupe du Club'));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Detail tournoi'), findsOneWidget);
+    expect(find.text('Tableau tournoi'), findsOneWidget);
+  });
+
+  testWidgets('home opens rankings badges and notifications', (tester) async {
+    await tester.pumpWidget(const ClubEchecsApp());
+    await tester.tap(find.text('Entrer'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Se connecter'));
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(GridView), const Offset(0, -320));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Classement'));
+    await tester.pumpAndSettle();
+    expect(find.text('Classement general'), findsOneWidget);
+
+    Navigator.of(tester.element(find.text('Classement general'))).pop();
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(GridView), const Offset(0, -220));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Badges'));
+    await tester.pumpAndSettle();
+    expect(find.text('Premiere victoire'), findsOneWidget);
+
+    Navigator.of(tester.element(find.text('Badges'))).pop();
+    await tester.pumpAndSettle();
+
+    await tester.drag(find.byType(GridView), const Offset(0, -220));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Notifications'));
+    await tester.pumpAndSettle();
+    expect(find.text('Invitation recue'), findsOneWidget);
+  });
 }
