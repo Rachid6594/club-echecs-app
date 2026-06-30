@@ -17,3 +17,16 @@ class User(AbstractUser):
     def __str__(self) -> str:
         return self.username
 
+
+class UserProfile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    display_name = models.CharField(max_length=120)
+    avatar_url = models.URLField(blank=True)
+    bio = models.TextField(blank=True)
+    country_code = models.CharField(max_length=2, blank=True)
+    club_joined_at = models.DateField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def __str__(self) -> str:
+        return self.display_name
