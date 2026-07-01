@@ -252,6 +252,92 @@ class AppLoginView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
+class AdminRegisterView(SupabaseAdminAPIView):
+    def post(self, request):
+        username = (request.data.get("username") or "").strip()
+        email = (request.data.get("email") or "").strip().lower()
+        password = request.data.get("password") or ""
+        display_name = (request.data.get("display_name") or username).strip()
+        role = request.data.get("role") or "admin"
+
+        if role not in {"admin", "super_admin"}:
+            return Response({"detail": "Seuls les comptes admin peuvent acceder a cet espace."}, status=status.HTTP_400_BAD_REQUEST)
+        if len(username) < 3:
+            return Response({"detail": "Le nom utilisateur doit contenir au moins 3 caracteres."}, status=status.HTTP_400_BAD_REQUEST)
+        if len(password) < 8:
+            return Response({"detail": "Le mot de passe doit contenir au moins 8 caracteres."}, status=status.HTTP_400_BAD_REQUEST)
+        if "@" not in email:
+            return Response({"detail": "Email invalide."}, status=status.HTTP_400_BAD_REQUEST)
+
+        user_id = uuid.uuid4()
+        profile_id = uuid.uuid4()
+        try:
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        insert into public.app_users (
+                          id, email, username, role, is_active, password_hash, created_at, updated_at
+                        )
+                        values (%s, %s, %s, %s, true, %s, now(), now())
+                        returning id, email, username, role
+                        """,
+                        [user_id, email, username, role, make_password(password)],
+                    )
+                    user = dictfetchall(cursor)[0]
+                    cursor.execute(
+                        """
+                        insert into public.user_profiles (
+                          id, user_id, display_name, total_points, total_wins, total_draws,
+                          total_losses, current_streak, best_streak, created_at, updated_at
+                        )
+                        values (%s, %s, %s, 0, 0, 0, 0, 0, 0, now(), now())
+                        """,
+                        [profile_id, user_id, display_name],
+                    )
+                log_admin_action("register_admin", "app_user", user_id, {"username": username, "role": role})
+            user.update({"display_name": display_name, "rank_name": "Admin", "points": 0})
+            token = signing.dumps({"user_id": str(user_id), "role": role, "scope": "admin"}, salt="admin-auth")
+            return Response({"user": serialize_app_user(user), "tokens": {"access": token}}, status=status.HTTP_201_CREATED)
+        except DatabaseError as error:
+            message = str(error)
+            if "duplicate" in message.lower() or "unique" in message.lower():
+                return Response({"detail": "Email ou nom utilisateur deja utilise."}, status=status.HTTP_400_BAD_REQUEST)
+            return db_error_response(error)
+
+
+class AdminLoginView(SupabaseAdminAPIView):
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        password = request.data.get("password") or ""
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select au.id, au.username, au.email, au.role, au.password_hash,
+                           up.display_name,
+                           coalesce(r.rank_name, 'Admin') as rank_name,
+                           coalesce(r.points, 0)::int as points
+                    from public.app_users au
+                    left join public.user_profiles up on up.user_id = au.id
+                    left join public.rankings r on r.user_id = au.id
+                    where lower(au.email) = %s and au.is_active = true
+                    limit 1
+                    """,
+                    [email],
+                )
+                rows = dictfetchall(cursor)
+                if not rows or not rows[0].get("password_hash") or not check_password(password, rows[0]["password_hash"]):
+                    return Response({"detail": "Identifiants invalides."}, status=status.HTTP_400_BAD_REQUEST)
+                if rows[0]["role"] not in {"admin", "super_admin"}:
+                    return Response({"detail": "Acces admin reserve aux administrateurs."}, status=status.HTTP_403_FORBIDDEN)
+                cursor.execute("update public.app_users set last_login_at = now(), updated_at = now() where id = %s", [rows[0]["id"]])
+            token = signing.dumps({"user_id": str(rows[0]["id"]), "role": rows[0]["role"], "scope": "admin"}, salt="admin-auth")
+            return Response({"user": serialize_app_user(rows[0]), "tokens": {"access": token}})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
 class AppForgotPasswordView(SupabaseAdminAPIView):
     def post(self, request):
         email = (request.data.get("email") or "").strip().lower()
@@ -587,12 +673,17 @@ class AdminMemberListCreateView(SupabaseAdminAPIView):
     def post(self, request):
         username = (request.data.get("username") or "").strip()
         email = (request.data.get("email") or "").strip().lower()
+        password = request.data.get("password") or ""
         display_name = (request.data.get("display_name") or username).strip()
         role = request.data.get("role") or "player"
         member_number = (request.data.get("member_number") or "").strip() or None
 
         if not username or not email:
             return Response({"detail": "username et email sont requis."}, status=status.HTTP_400_BAD_REQUEST)
+        if len(password) < 8:
+            return Response({"detail": "Le mot de passe doit contenir au moins 8 caracteres."}, status=status.HTTP_400_BAD_REQUEST)
+        if role not in {"player", "admin", "super_admin"}:
+            return Response({"detail": "Role invalide."}, status=status.HTTP_400_BAD_REQUEST)
 
         user_id = uuid.uuid4()
         member_id = uuid.uuid4()
@@ -604,11 +695,11 @@ class AdminMemberListCreateView(SupabaseAdminAPIView):
                 with connection.cursor() as cursor:
                     cursor.execute(
                         """
-                        insert into public.app_users (id, email, username, role, is_active, created_at, updated_at)
-                        values (%s, %s, %s, %s, true, now(), now())
+                        insert into public.app_users (id, email, username, role, is_active, password_hash, created_at, updated_at)
+                        values (%s, %s, %s, %s, true, %s, now(), now())
                         returning id, email, username, role, is_active, created_at
                         """,
-                        [user_id, email, username, role],
+                        [user_id, email, username, role, make_password(password)],
                     )
                     user = dictfetchall(cursor)[0]
 

@@ -19,11 +19,13 @@ from apps.admin_api.views import (
     AdminBadgeListView,
     AdminDashboardView,
     AdminDisputeListView,
+    AdminLoginView,
     AdminMemberListCreateView,
     AdminTournamentListCreateView,
     AdminLiveMatchListView,
     AdminNotificationListView,
     AdminRankingListView,
+    AdminRegisterView,
 )
 
 
@@ -43,6 +45,8 @@ urlpatterns = [
     path("app/invitations/", AppInvitationListCreateView.as_view(), name="app-invitations-create"),
     path("app/invitations/<uuid:invitation_id>/<str:action>/", AppInvitationActionView.as_view(), name="app-invitations-action"),
     path("app/games/history/", AppGameHistoryView.as_view(), name="app-games-history"),
+    path("admin/auth/register/", AdminRegisterView.as_view(), name="admin-auth-register"),
+    path("admin/auth/login/", AdminLoginView.as_view(), name="admin-auth-login"),
     path("admin/dashboard/", AdminDashboardView.as_view(), name="admin-dashboard"),
     path("admin/members/", AdminMemberListCreateView.as_view(), name="admin-members"),
     path("admin/tournaments/", AdminTournamentListCreateView.as_view(), name="admin-tournaments"),

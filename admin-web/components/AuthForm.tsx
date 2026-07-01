@@ -15,7 +15,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   async function submit(formData: FormData) {
     setPending(true);
     setMessage('');
-    const endpoint = mode === 'login' ? '/app/auth/login/' : '/app/auth/register/';
+    const endpoint = mode === 'login' ? '/admin/auth/login/' : '/admin/auth/register/';
     const response = await fetch(adminApiUrl(endpoint), {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -34,11 +34,12 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
   return (
     <form action={submit} className="auth-card">
-      <h1>{mode === 'login' ? 'Connexion admin' : 'Creer un compte'}</h1>
+      <h1>{mode === 'login' ? 'Connexion admin' : 'Creer un compte admin'}</h1>
       {mode === 'register' ? (
         <>
           <label>Nom utilisateur<input name="username" required minLength={3} /></label>
           <label>Nom affiche<input name="display_name" /></label>
+          <label>Role<select name="role" defaultValue="admin"><option value="admin">Admin</option><option value="super_admin">Super admin</option></select></label>
         </>
       ) : null}
       <label>Email<input name="email" type="email" required /></label>

@@ -31,6 +31,7 @@ export function MemberForm() {
     <form action={submit} className="form-panel">
       <label>Nom utilisateur<input name="username" required placeholder="rachid" /></label>
       <label>Email<input name="email" type="email" required placeholder="rachid@club.test" /></label>
+      <label>Mot de passe<input name="password" type="password" required minLength={8} placeholder="Minimum 8 caracteres" /></label>
       <label>Nom affiche<input name="display_name" placeholder="Rachid" /></label>
       <label>Numero membre<input name="member_number" placeholder="CE-001" /></label>
       <label>Role<select name="role" defaultValue="player"><option value="player">Joueur</option><option value="admin">Admin</option><option value="super_admin">Super admin</option></select></label>
