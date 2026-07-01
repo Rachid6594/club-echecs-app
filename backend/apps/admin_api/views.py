@@ -8,6 +8,7 @@ from django.db import DatabaseError, connection, transaction
 from django.utils import timezone
 from rest_framework import status
 from rest_framework.permissions import AllowAny
+from rest_framework.exceptions import NotAuthenticated, PermissionDenied
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -128,6 +129,33 @@ def current_app_user_id(request) -> str | None:
     except (BadSignature, SignatureExpired):
         return None
     return payload.get("user_id")
+
+
+def current_admin_user(request) -> tuple[str | None, str | None]:
+    header = request.headers.get("Authorization", "")
+    if not header.startswith("Bearer "):
+        return None, None
+    token = header.removeprefix("Bearer ").strip()
+    try:
+        payload = signing.loads(token, salt="admin-auth", max_age=60 * 60 * 24 * 14)
+    except (BadSignature, SignatureExpired):
+        return None, None
+    role = payload.get("role")
+    if role not in {"admin", "super_admin"}:
+        return None, None
+    return payload.get("user_id"), role
+
+
+class AdminProtectedAPIView(SupabaseAdminAPIView):
+    def initial(self, request, *args, **kwargs):
+        super().initial(request, *args, **kwargs)
+        user_id, role = current_admin_user(request)
+        if not user_id:
+            raise NotAuthenticated("Authentification admin requise.")
+        if role not in {"admin", "super_admin"}:
+            raise PermissionDenied("Acces admin reserve aux administrateurs.")
+        request.admin_user_id = user_id
+        request.admin_role = role
 
 
 def require_app_user(request) -> tuple[str | None, Response | None]:
@@ -612,7 +640,7 @@ class AppNotificationListView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
-class AdminDashboardView(SupabaseAdminAPIView):
+class AdminDashboardView(AdminProtectedAPIView):
     def get(self, request):
         try:
             return Response(fetch_dashboard_payload())
@@ -620,7 +648,7 @@ class AdminDashboardView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
-class AdminMemberListCreateView(SupabaseAdminAPIView):
+class AdminMemberListCreateView(AdminProtectedAPIView):
     def get(self, request):
         try:
             search = request.query_params.get("search")
@@ -741,7 +769,7 @@ class AdminMemberListCreateView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
-class AdminTournamentListCreateView(SupabaseAdminAPIView):
+class AdminTournamentListCreateView(AdminProtectedAPIView):
     def get(self, request):
         try:
             with connection.cursor() as cursor:
@@ -824,7 +852,7 @@ class AdminTournamentListCreateView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
-class AdminDisputeListView(SupabaseAdminAPIView):
+class AdminDisputeListView(AdminProtectedAPIView):
     def get(self, request):
         try:
             with connection.cursor() as cursor:
@@ -845,7 +873,7 @@ class AdminDisputeListView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
-class AdminLiveMatchListView(SupabaseAdminAPIView):
+class AdminLiveMatchListView(AdminProtectedAPIView):
     def get(self, request):
         try:
             with connection.cursor() as cursor:
@@ -869,7 +897,7 @@ class AdminLiveMatchListView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
-class AdminRankingListView(SupabaseAdminAPIView):
+class AdminRankingListView(AdminProtectedAPIView):
     def get(self, request):
         try:
             with connection.cursor() as cursor:
@@ -890,7 +918,7 @@ class AdminRankingListView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
-class AdminNotificationListView(SupabaseAdminAPIView):
+class AdminNotificationListView(AdminProtectedAPIView):
     def get(self, request):
         try:
             with connection.cursor() as cursor:
@@ -909,7 +937,7 @@ class AdminNotificationListView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
-class AdminBadgeListView(SupabaseAdminAPIView):
+class AdminBadgeListView(AdminProtectedAPIView):
     def get(self, request):
         try:
             with connection.cursor() as cursor:
@@ -925,7 +953,7 @@ class AdminBadgeListView(SupabaseAdminAPIView):
             return db_error_response(error)
 
 
-class AdminAuditLogListView(SupabaseAdminAPIView):
+class AdminAuditLogListView(AdminProtectedAPIView):
     def get(self, request):
         try:
             with connection.cursor() as cursor:

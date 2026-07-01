@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { adminApiUrl } from '../lib/admin-api';
+import { readAdminToken } from '../lib/admin-client';
 
 export function MemberForm() {
-  const router = useRouter();
   const [message, setMessage] = useState('');
   const [pending, setPending] = useState(false);
 
@@ -14,7 +13,7 @@ export function MemberForm() {
     setMessage('');
     const response = await fetch(adminApiUrl('/admin/members/'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${readAdminToken() ?? ''}` },
       body: JSON.stringify(Object.fromEntries(formData)),
     });
     const payload = await response.json().catch(() => ({}));
@@ -24,7 +23,7 @@ export function MemberForm() {
       return;
     }
     setMessage('Membre cree dans Supabase.');
-    router.refresh();
+    window.location.reload();
   }
 
   return (

@@ -1,10 +1,18 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { AdminShell } from '../../components/AdminShell';
 import { MemberForm } from '../../components/MemberForm';
 import { StatusMessage } from '../../components/StatusMessage';
-import { adminFetch, Member } from '../../lib/admin-api';
+import { ApiState, Member } from '../../lib/admin-api';
+import { adminClientFetch } from '../../lib/admin-client';
 
-export default async function MembersPage() {
-  const state = await adminFetch<{ results: Member[] }>('/admin/members/');
+export default function MembersPage() {
+  const [state, setState] = useState<ApiState<{ results: Member[] }> | null>(null);
+
+  useEffect(() => {
+    adminClientFetch<{ results: Member[] }>('/admin/members/').then(setState);
+  }, []);
 
   return (
     <AdminShell>
@@ -21,7 +29,7 @@ export default async function MembersPage() {
         </article>
         <article className="panel wide">
           <h3>Liste des membres</h3>
-          {!state.ok ? <StatusMessage title="Connexion impossible" detail={state.error} /> : (
+          {!state ? <StatusMessage title="Chargement" detail="Lecture securisee des membres..." /> : !state.ok ? <StatusMessage title="Connexion admin requise" detail={state.error} /> : (
             <div className="table">
               <div className="table-row table-head"><span>Nom</span><span>Email</span><span>Role</span><span>Rang</span><span>Points</span></div>
               {state.data.results.length === 0 ? <p>Aucun membre dans Supabase.</p> : state.data.results.map((member) => (

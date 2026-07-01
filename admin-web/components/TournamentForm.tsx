@@ -1,11 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { adminApiUrl } from '../lib/admin-api';
+import { readAdminToken } from '../lib/admin-client';
 
 export function TournamentForm() {
-  const router = useRouter();
   const [message, setMessage] = useState('');
   const [pending, setPending] = useState(false);
 
@@ -15,7 +14,7 @@ export function TournamentForm() {
     const values = Object.fromEntries(formData);
     const response = await fetch(adminApiUrl('/admin/tournaments/'), {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${readAdminToken() ?? ''}` },
       body: JSON.stringify(values),
     });
     const payload = await response.json().catch(() => ({}));
@@ -25,7 +24,7 @@ export function TournamentForm() {
       return;
     }
     setMessage('Tournoi cree dans Supabase.');
-    router.refresh();
+    window.location.reload();
   }
 
   return (
