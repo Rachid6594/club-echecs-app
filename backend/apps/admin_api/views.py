@@ -2,6 +2,7 @@ import json
 import uuid
 
 from django.core import signing
+from django.core.signing import BadSignature, SignatureExpired
 from django.contrib.auth.hashers import check_password, make_password
 from django.db import DatabaseError, connection, transaction
 from django.utils import timezone
@@ -113,7 +114,27 @@ def fetch_dashboard_payload():
 
 
 class SupabaseAdminAPIView(APIView):
+    authentication_classes = []
     permission_classes = [AllowAny]
+
+
+def current_app_user_id(request) -> str | None:
+    header = request.headers.get("Authorization", "")
+    if not header.startswith("Bearer "):
+        return None
+    token = header.removeprefix("Bearer ").strip()
+    try:
+        payload = signing.loads(token, salt="app-auth", max_age=60 * 60 * 24 * 14)
+    except (BadSignature, SignatureExpired):
+        return None
+    return payload.get("user_id")
+
+
+def require_app_user(request) -> tuple[str | None, Response | None]:
+    user_id = current_app_user_id(request)
+    if not user_id:
+        return None, Response({"detail": "Authentification requise."}, status=status.HTTP_401_UNAUTHORIZED)
+    return user_id, None
 
 
 def serialize_app_user(row: dict):
@@ -227,6 +248,280 @@ class AppLoginView(SupabaseAdminAPIView):
                 cursor.execute("update public.app_users set last_login_at = now(), updated_at = now() where id = %s", [rows[0]["id"]])
             token = signing.dumps({"user_id": str(rows[0]["id"]), "role": rows[0]["role"]}, salt="app-auth")
             return Response({"user": serialize_app_user(rows[0]), "tokens": {"access": token}})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AppForgotPasswordView(SupabaseAdminAPIView):
+    def post(self, request):
+        email = (request.data.get("email") or "").strip().lower()
+        if not email:
+            return Response({"detail": "Email requis."}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            log_admin_action("forgot_password_requested", "app_user", None, {"email": email})
+            return Response({"detail": "Si ce compte existe, un administrateur pourra reinitialiser le mot de passe."})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AppMeView(SupabaseAdminAPIView):
+    def get(self, request):
+        user_id, error = require_app_user(request)
+        if error:
+            return error
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select au.id, au.username, au.email, au.role,
+                           up.display_name, up.bio, up.country_code,
+                           coalesce(r.rank_name, 'Novice I') as rank_name,
+                           coalesce(r.points, 0)::int as points,
+                           coalesce(r.wins, 0)::int as wins,
+                           coalesce(r.draws, 0)::int as draws,
+                           coalesce(r.losses, 0)::int as losses,
+                           coalesce(r.games_played, 0)::int as games_played
+                    from public.app_users au
+                    left join public.user_profiles up on up.user_id = au.id
+                    left join public.rankings r on r.user_id = au.id
+                    where au.id = %s
+                    limit 1
+                    """,
+                    [user_id],
+                )
+                rows = dictfetchall(cursor)
+            if not rows:
+                return Response({"detail": "Utilisateur introuvable."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"user": rows[0]})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AppMemberListView(SupabaseAdminAPIView):
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select cm.id, au.id as user_id, au.username, au.email, up.display_name,
+                           cm.status, cm.joined_at,
+                           coalesce(r.points, 0)::int as points,
+                           coalesce(r.rank_name, 'Novice I') as rank_name
+                    from public.club_members cm
+                    join public.app_users au on au.id = cm.user_id
+                    left join public.user_profiles up on up.user_id = au.id
+                    left join public.rankings r on r.user_id = au.id
+                    where cm.status = 'active'
+                    order by up.display_name nulls last, au.username
+                    limit 200
+                    """
+                )
+                return Response({"results": dictfetchall(cursor)})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AppMemberDetailView(SupabaseAdminAPIView):
+    def get(self, request, member_id):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select cm.id, au.id as user_id, au.username, au.email, up.display_name,
+                           up.bio, up.country_code, cm.status, cm.joined_at,
+                           coalesce(r.points, 0)::int as points,
+                           coalesce(r.wins, 0)::int as wins,
+                           coalesce(r.draws, 0)::int as draws,
+                           coalesce(r.losses, 0)::int as losses,
+                           coalesce(r.games_played, 0)::int as games_played,
+                           coalesce(r.rank_name, 'Novice I') as rank_name
+                    from public.club_members cm
+                    join public.app_users au on au.id = cm.user_id
+                    left join public.user_profiles up on up.user_id = au.id
+                    left join public.rankings r on r.user_id = au.id
+                    where cm.id = %s
+                    limit 1
+                    """,
+                    [member_id],
+                )
+                rows = dictfetchall(cursor)
+            if not rows:
+                return Response({"detail": "Membre introuvable."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"member": rows[0]})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AppInvitationListCreateView(SupabaseAdminAPIView):
+    def get(self, request, box="received"):
+        user_id, error = require_app_user(request)
+        if error:
+            return error
+        if box not in {"received", "sent"}:
+            return Response({"detail": "Boite inconnue."}, status=status.HTTP_404_NOT_FOUND)
+        field = "receiver_id" if box == "received" else "sender_id"
+        other_join = "sender" if box == "received" else "receiver"
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    f"""
+                    select i.id, i.status, i.message, i.proposed_initial_seconds,
+                           i.proposed_increment_seconds, i.expires_at, i.created_at,
+                           other_user.username as other_username,
+                           other_profile.display_name as other_display_name
+                    from public.invitations i
+                    join public.app_users other_user on other_user.id = i.{other_join}_id
+                    left join public.user_profiles other_profile on other_profile.user_id = other_user.id
+                    where i.{field} = %s
+                    order by i.created_at desc
+                    limit 100
+                    """,
+                    [user_id],
+                )
+                return Response({"results": dictfetchall(cursor)})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+    def post(self, request, box=None):
+        sender_id, error = require_app_user(request)
+        if error:
+            return error
+        receiver_id = request.data.get("receiver_id")
+        message = request.data.get("message") or ""
+        if not receiver_id:
+            return Response({"detail": "receiver_id requis."}, status=status.HTTP_400_BAD_REQUEST)
+        if str(receiver_id) == str(sender_id):
+            return Response({"detail": "Impossible de s inviter soi-meme."}, status=status.HTTP_400_BAD_REQUEST)
+        invitation_id = uuid.uuid4()
+        try:
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        """
+                        insert into public.invitations (
+                          id, sender_id, receiver_id, status, proposed_initial_seconds,
+                          proposed_increment_seconds, message, expires_at, created_at, updated_at
+                        )
+                        values (%s, %s, %s, 'pending', 600, 0, %s, now() + interval '7 days', now(), now())
+                        returning id, status, message, created_at
+                        """,
+                        [invitation_id, sender_id, receiver_id, message],
+                    )
+                    invitation = dictfetchall(cursor)[0]
+                log_admin_action("create_invitation", "invitation", invitation_id, {"sender_id": sender_id, "receiver_id": receiver_id})
+            return Response(invitation, status=status.HTTP_201_CREATED)
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AppInvitationActionView(SupabaseAdminAPIView):
+    def post(self, request, invitation_id, action):
+        user_id, error = require_app_user(request)
+        if error:
+            return error
+        if action not in {"accept", "reject", "cancel"}:
+            return Response({"detail": "Action inconnue."}, status=status.HTTP_404_NOT_FOUND)
+        next_status = {"accept": "accepted", "reject": "rejected", "cancel": "cancelled"}[action]
+        owner_field = "sender_id" if action == "cancel" else "receiver_id"
+        try:
+            with transaction.atomic():
+                with connection.cursor() as cursor:
+                    cursor.execute(
+                        f"""
+                        update public.invitations
+                        set status = %s, responded_at = now(), updated_at = now()
+                        where id = %s and {owner_field} = %s and status = 'pending'
+                        returning id, status, responded_at
+                        """,
+                        [next_status, invitation_id, user_id],
+                    )
+                    rows = dictfetchall(cursor)
+                if not rows:
+                    return Response({"detail": "Invitation non modifiable."}, status=status.HTTP_400_BAD_REQUEST)
+                log_admin_action(f"{action}_invitation", "invitation", invitation_id, {"user_id": user_id})
+            return Response(rows[0])
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AppGameHistoryView(SupabaseAdminAPIView):
+    def get(self, request):
+        user_id, error = require_app_user(request)
+        if error:
+            return error
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select g.id, g.status, g.result, g.started_at, g.completed_at,
+                           white_user.username as white_username,
+                           black_user.username as black_username
+                    from public.games g
+                    left join public.app_users white_user on white_user.id = g.white_player_id
+                    left join public.app_users black_user on black_user.id = g.black_player_id
+                    where g.white_player_id = %s or g.black_player_id = %s
+                    order by g.created_at desc
+                    limit 100
+                    """,
+                    [user_id, user_id],
+                )
+                return Response({"results": dictfetchall(cursor)})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AppPublicTournamentListView(SupabaseAdminAPIView):
+    def get(self, request):
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select id, name, description, format, status, starts_at, ends_at,
+                           max_players, created_at
+                    from public.tournaments
+                    where status <> 'cancelled'
+                    order by starts_at nulls last, created_at desc
+                    limit 100
+                    """
+                )
+                return Response({"results": dictfetchall(cursor)})
+        except DatabaseError as error:
+            return db_error_response(error)
+
+
+class AppLiveMatchListView(SupabaseAdminAPIView):
+    def get(self, request):
+        return AdminLiveMatchListView().get(request)
+
+
+class AppPublicRankingListView(SupabaseAdminAPIView):
+    def get(self, request):
+        return AdminRankingListView().get(request)
+
+
+class AppPublicBadgeListView(SupabaseAdminAPIView):
+    def get(self, request):
+        return AdminBadgeListView().get(request)
+
+
+class AppNotificationListView(SupabaseAdminAPIView):
+    def get(self, request):
+        user_id, error = require_app_user(request)
+        if error:
+            return error
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    select id, type, title, body, (read_at is not null) as is_read, created_at
+                    from public.notifications
+                    where user_id = %s
+                    order by created_at desc
+                    limit 100
+                    """,
+                    [user_id],
+                )
+                return Response({"results": dictfetchall(cursor)})
         except DatabaseError as error:
             return db_error_response(error)
 

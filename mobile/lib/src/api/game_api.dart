@@ -17,4 +17,3 @@ class GameApi {
     return {'game_id': gameId, 'action': 'resign'};
   }
 }
-

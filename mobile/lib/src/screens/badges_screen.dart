@@ -12,7 +12,8 @@ class BadgesScreen extends StatefulWidget {
 }
 
 class _BadgesScreenState extends State<BadgesScreen> {
-  late final Future<List<dynamic>> _badges = ApiClient().getList('/admin/badges/');
+  late final Future<List<dynamic>> _badges =
+      ApiClient().getList('/app/badges/');
 
   @override
   Widget build(BuildContext context) {
@@ -25,10 +26,13 @@ class _BadgesScreenState extends State<BadgesScreen> {
             return const Center(child: CircularProgressIndicator());
           }
           if (snapshot.hasError) {
-            return Center(child: Text('Badges indisponibles: ${snapshot.error}'));
+            return Center(
+                child: Text('Badges indisponibles: ${snapshot.error}'));
           }
           final badges = snapshot.data ?? [];
-          if (badges.isEmpty) return const Center(child: Text('Aucun badge dans Supabase.'));
+          if (badges.isEmpty) {
+            return const Center(child: Text('Aucun badge dans Supabase.'));
+          }
           return GridView.count(
             padding: const EdgeInsets.all(16),
             crossAxisCount: 2,
@@ -37,7 +41,9 @@ class _BadgesScreenState extends State<BadgesScreen> {
             childAspectRatio: 1.15,
             children: [
               for (final item in badges)
-                _BadgeTile(label: (item as Map<String, dynamic>)['name']?.toString() ?? 'Badge'),
+                _BadgeTile(
+                    label: (item as Map<String, dynamic>)['name']?.toString() ??
+                        'Badge'),
             ],
           );
         },
@@ -54,13 +60,19 @@ class _BadgeTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DecoratedBox(
-      decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8), border: Border.all(color: const Color(0xFFE2E8F0))),
+      decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: const Color(0xFFE2E8F0))),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.workspace_premium, size: 36, color: Color(0xFFD4AF37)),
+          const Icon(Icons.workspace_premium,
+              size: 36, color: Color(0xFFD4AF37)),
           const SizedBox(height: 10),
-          Text(label, textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(label,
+              textAlign: TextAlign.center,
+              style: const TextStyle(fontWeight: FontWeight.w600)),
         ],
       ),
     );

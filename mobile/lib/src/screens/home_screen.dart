@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 
 import 'game_screen.dart';
+import 'game_history_screen.dart';
+import 'invitations_screen.dart';
 import 'live_matches_screen.dart';
 import 'badges_screen.dart';
+import 'members_screen.dart';
 import 'notifications_screen.dart';
 import 'profile_screen.dart';
 import 'rankings_screen.dart';
+import 'settings_screen.dart';
 import 'tournaments_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -21,7 +25,8 @@ class HomeScreen extends StatelessWidget {
         actions: [
           IconButton(
             tooltip: 'Profil',
-            onPressed: () => Navigator.pushNamed(context, ProfileScreen.routeName),
+            onPressed: () =>
+                Navigator.pushNamed(context, ProfileScreen.routeName),
             icon: const Icon(Icons.person),
           ),
         ],
@@ -33,14 +38,55 @@ class HomeScreen extends StatelessWidget {
         crossAxisSpacing: 12,
         childAspectRatio: 1.35,
         children: [
-          const _HomeTile(icon: Icons.people, label: 'Membres'),
-          const _HomeTile(icon: Icons.mail, label: 'Invitations'),
-          _HomeTile(icon: Icons.grid_on, label: 'Parties', onTap: () => Navigator.pushNamed(context, GameScreen.routeName)),
-          _HomeTile(icon: Icons.visibility, label: 'En direct', onTap: () => Navigator.pushNamed(context, LiveMatchesScreen.routeName)),
-          _HomeTile(icon: Icons.emoji_events, label: 'Tournois', onTap: () => Navigator.pushNamed(context, TournamentsScreen.routeName)),
-          _HomeTile(icon: Icons.leaderboard, label: 'Classement', onTap: () => Navigator.pushNamed(context, RankingsScreen.routeName)),
-          _HomeTile(icon: Icons.workspace_premium, label: 'Badges', onTap: () => Navigator.pushNamed(context, BadgesScreen.routeName)),
-          _HomeTile(icon: Icons.notifications, label: 'Notifications', onTap: () => Navigator.pushNamed(context, NotificationsScreen.routeName)),
+          _HomeTile(
+              icon: Icons.people,
+              label: 'Membres',
+              onTap: () =>
+                  Navigator.pushNamed(context, MembersScreen.routeName)),
+          _HomeTile(
+              icon: Icons.mail,
+              label: 'Invitations',
+              onTap: () =>
+                  Navigator.pushNamed(context, InvitationsScreen.routeName)),
+          _HomeTile(
+              icon: Icons.grid_on,
+              label: 'Parties',
+              onTap: () => Navigator.pushNamed(context, GameScreen.routeName)),
+          _HomeTile(
+              icon: Icons.visibility,
+              label: 'En direct',
+              onTap: () =>
+                  Navigator.pushNamed(context, LiveMatchesScreen.routeName)),
+          _HomeTile(
+              icon: Icons.emoji_events,
+              label: 'Tournois',
+              onTap: () =>
+                  Navigator.pushNamed(context, TournamentsScreen.routeName)),
+          _HomeTile(
+              icon: Icons.leaderboard,
+              label: 'Classement',
+              onTap: () =>
+                  Navigator.pushNamed(context, RankingsScreen.routeName)),
+          _HomeTile(
+              icon: Icons.workspace_premium,
+              label: 'Badges',
+              onTap: () =>
+                  Navigator.pushNamed(context, BadgesScreen.routeName)),
+          _HomeTile(
+              icon: Icons.notifications,
+              label: 'Notifications',
+              onTap: () =>
+                  Navigator.pushNamed(context, NotificationsScreen.routeName)),
+          _HomeTile(
+              icon: Icons.history,
+              label: 'Historique',
+              onTap: () =>
+                  Navigator.pushNamed(context, GameHistoryScreen.routeName)),
+          _HomeTile(
+              icon: Icons.settings,
+              label: 'Parametres',
+              onTap: () =>
+                  Navigator.pushNamed(context, SettingsScreen.routeName)),
         ],
       ),
     );
@@ -77,4 +123,3 @@ class _HomeTile extends StatelessWidget {
     );
   }
 }
-

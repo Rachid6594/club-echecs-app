@@ -49,7 +49,8 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
     } on ApiException catch (error) {
-      setState(() => _message = error.body['detail']?.toString() ?? 'Inscription impossible');
+      setState(() => _message =
+          error.body['detail']?.toString() ?? 'Inscription impossible');
     } finally {
       if (mounted) setState(() => _pending = false);
     }
@@ -62,22 +63,34 @@ class _RegisterScreenState extends State<RegisterScreen> {
       body: ListView(
         padding: const EdgeInsets.all(20),
         children: [
-          TextField(controller: _usernameController, decoration: const InputDecoration(labelText: 'Nom utilisateur')),
+          TextField(
+              controller: _usernameController,
+              decoration: const InputDecoration(labelText: 'Nom utilisateur')),
           const SizedBox(height: 12),
-          TextField(controller: _displayNameController, decoration: const InputDecoration(labelText: 'Nom affiche')),
+          TextField(
+              controller: _displayNameController,
+              decoration: const InputDecoration(labelText: 'Nom affiche')),
           const SizedBox(height: 12),
-          TextField(controller: _emailController, decoration: const InputDecoration(labelText: 'Email')),
+          TextField(
+              controller: _emailController,
+              decoration: const InputDecoration(labelText: 'Email')),
           const SizedBox(height: 12),
-          TextField(controller: _passwordController, obscureText: true, decoration: const InputDecoration(labelText: 'Mot de passe')),
+          TextField(
+              controller: _passwordController,
+              obscureText: true,
+              decoration: const InputDecoration(labelText: 'Mot de passe')),
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _pending ? null : _register,
             child: Text(_pending ? 'Creation...' : 'Creer mon compte'),
           ),
-          if (_message != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_message!, style: const TextStyle(color: Colors.red))),
+          if (_message != null)
+            Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child:
+                    Text(_message!, style: const TextStyle(color: Colors.red))),
         ],
       ),
     );
   }
 }
-

@@ -12,7 +12,8 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  late final Future<List<dynamic>> _notifications = ApiClient().getList('/admin/notifications/');
+  late final Future<List<dynamic>> _notifications =
+      ApiClient().getList('/app/notifications/');
 
   @override
   Widget build(BuildContext context) {
@@ -21,10 +22,18 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
       body: FutureBuilder<List<dynamic>>(
         future: _notifications,
         builder: (context, snapshot) {
-          if (snapshot.connectionState != ConnectionState.done) return const Center(child: CircularProgressIndicator());
-          if (snapshot.hasError) return Center(child: Text('Notifications indisponibles: ${snapshot.error}'));
+          if (snapshot.connectionState != ConnectionState.done) {
+            return const Center(child: CircularProgressIndicator());
+          }
+          if (snapshot.hasError) {
+            return Center(
+                child: Text('Notifications indisponibles: ${snapshot.error}'));
+          }
           final notifications = snapshot.data ?? [];
-          if (notifications.isEmpty) return const Center(child: Text('Aucune notification dans Supabase.'));
+          if (notifications.isEmpty) {
+            return const Center(
+                child: Text('Aucune notification dans Supabase.'));
+          }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
             itemCount: notifications.length,
@@ -33,7 +42,9 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               final notification = notifications[index] as Map<String, dynamic>;
               return ListTile(
                 leading: const Icon(Icons.notifications),
-                title: Text(notification['title']?.toString() ?? notification['type']?.toString() ?? 'Notification'),
+                title: Text(notification['title']?.toString() ??
+                    notification['type']?.toString() ??
+                    'Notification'),
                 subtitle: Text(notification['body']?.toString() ?? ''),
               );
             },
