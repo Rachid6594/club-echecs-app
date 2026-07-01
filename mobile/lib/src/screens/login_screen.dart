@@ -39,12 +39,21 @@ class _LoginScreenState extends State<LoginScreen> {
     });
     try {
       await _apiClient.appLogin(
-          _emailController.text, _passwordController.text);
+        _emailController.text,
+        _passwordController.text,
+      );
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
     } on ApiException catch (error) {
-      setState(() => _message =
-          error.body['detail']?.toString() ?? 'Connexion impossible');
+      setState(
+        () => _message =
+            error.body['detail']?.toString() ?? 'Connexion impossible',
+      );
+    } catch (_) {
+      setState(
+        () => _message =
+            'Connexion au serveur impossible. Verifiez internet puis reessayez.',
+      );
     } finally {
       if (mounted) setState(() => _pending = false);
     }
@@ -58,13 +67,15 @@ class _LoginScreenState extends State<LoginScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email')),
+            controller: _emailController,
+            decoration: const InputDecoration(labelText: 'Email'),
+          ),
           const SizedBox(height: 12),
           TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Mot de passe')),
+            controller: _passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: 'Mot de passe'),
+          ),
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _pending ? null : _login,
@@ -72,9 +83,9 @@ class _LoginScreenState extends State<LoginScreen> {
           ),
           if (_message != null)
             Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child:
-                    Text(_message!, style: const TextStyle(color: Colors.red))),
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(_message!, style: const TextStyle(color: Colors.red)),
+            ),
           TextButton(
             onPressed: () =>
                 Navigator.pushNamed(context, ForgotPasswordScreen.routeName),

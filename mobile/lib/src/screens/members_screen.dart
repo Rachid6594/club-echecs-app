@@ -13,8 +13,9 @@ class MembersScreen extends StatefulWidget {
 }
 
 class _MembersScreenState extends State<MembersScreen> {
-  late final Future<List<dynamic>> _members =
-      ApiClient().getList('/app/members/');
+  late final Future<List<dynamic>> _members = ApiClient().getList(
+    '/app/members/',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +29,8 @@ class _MembersScreenState extends State<MembersScreen> {
           }
           if (snapshot.hasError) {
             return Center(
-                child: Text('Membres indisponibles: ${snapshot.error}'));
+              child: Text('Membres indisponibles: ${snapshot.error}'),
+            );
           }
           final members = snapshot.data ?? [];
           if (members.isEmpty) {
@@ -43,18 +45,24 @@ class _MembersScreenState extends State<MembersScreen> {
               return ListTile(
                 tileColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: Color(0xFFE2E8F0))),
+                  borderRadius: BorderRadius.circular(8),
+                  side: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
                 leading: const CircleAvatar(child: Icon(Icons.person)),
-                title: Text(member['display_name']?.toString() ??
-                    member['username']?.toString() ??
-                    'Membre'),
-                subtitle:
-                    Text('${member['rank_name']} | ${member['points']} pts'),
+                title: Text(
+                  member['display_name']?.toString() ??
+                      member['username']?.toString() ??
+                      'Membre',
+                ),
+                subtitle: Text(
+                  '${member['rank_name']} | ${member['points']} pts',
+                ),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () => Navigator.pushNamed(
-                    context, MemberDetailScreen.routeName,
-                    arguments: member),
+                  context,
+                  MemberDetailScreen.routeName,
+                  arguments: member,
+                ),
               );
             },
           );

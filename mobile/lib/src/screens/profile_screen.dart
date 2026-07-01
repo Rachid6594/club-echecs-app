@@ -15,8 +15,9 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late final Future<Map<String, dynamic>> _profile =
-      ApiClient().getMap('/app/me/');
+  late final Future<Map<String, dynamic>> _profile = ApiClient().getMap(
+    '/app/me/',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -30,17 +31,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           }
           if (snapshot.hasError) {
             return Center(
-                child: Text('Profil indisponible: ${snapshot.error}'));
+              child: Text('Profil indisponible: ${snapshot.error}'),
+            );
           }
           final payload = snapshot.data ?? {};
           final user = (payload['user'] as Map<String, dynamic>?) ?? {};
           final profile = (payload['profile'] as Map<String, dynamic>?) ?? {};
           final ranking = (payload['ranking'] as Map<String, dynamic>?) ?? {};
-          final name = profile['display_name']?.toString() ??
+          final name =
+              profile['display_name']?.toString() ??
               user['display_name']?.toString() ??
               user['username']?.toString() ??
               'Joueur du club';
-          final rankName = ranking['rank_name']?.toString() ??
+          final rankName =
+              ranking['rank_name']?.toString() ??
               user['rank_name']?.toString() ??
               'Novice I';
           final points = ranking['points'] ?? user['points'] ?? 0;
@@ -49,25 +53,35 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.all(20),
             children: [
               const CircleAvatar(
-                  radius: 42, child: Icon(Icons.person, size: 42)),
+                radius: 42,
+                child: Icon(Icons.person, size: 42),
+              ),
               const SizedBox(height: 16),
               Center(
-                  child: Text(name,
-                      style: const TextStyle(
-                          fontSize: 22, fontWeight: FontWeight.w700))),
+                child: Text(
+                  name,
+                  style: const TextStyle(
+                    fontSize: 22,
+                    fontWeight: FontWeight.w700,
+                  ),
+                ),
+              ),
               const SizedBox(height: 24),
               ListTile(
-                  leading: const Icon(Icons.star),
-                  title: const Text('Rang'),
-                  subtitle: Text(rankName)),
+                leading: const Icon(Icons.star),
+                title: const Text('Rang'),
+                subtitle: Text(rankName),
+              ),
               ListTile(
-                  leading: const Icon(Icons.scoreboard),
-                  title: const Text('Points'),
-                  subtitle: Text('$points')),
+                leading: const Icon(Icons.scoreboard),
+                title: const Text('Points'),
+                subtitle: Text('$points'),
+              ),
               ListTile(
-                  leading: const Icon(Icons.mail),
-                  title: const Text('Email'),
-                  subtitle: Text(user['email']?.toString() ?? '-')),
+                leading: const Icon(Icons.mail),
+                title: const Text('Email'),
+                subtitle: Text(user['email']?.toString() ?? '-'),
+              ),
               const Divider(height: 32),
               ListTile(
                 leading: const Icon(Icons.workspace_premium),

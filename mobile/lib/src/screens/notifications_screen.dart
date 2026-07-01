@@ -12,8 +12,9 @@ class NotificationsScreen extends StatefulWidget {
 }
 
 class _NotificationsScreenState extends State<NotificationsScreen> {
-  late final Future<List<dynamic>> _notifications =
-      ApiClient().getList('/app/notifications/');
+  late final Future<List<dynamic>> _notifications = ApiClient().getList(
+    '/app/notifications/',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -27,12 +28,14 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           }
           if (snapshot.hasError) {
             return Center(
-                child: Text('Notifications indisponibles: ${snapshot.error}'));
+              child: Text('Notifications indisponibles: ${snapshot.error}'),
+            );
           }
           final notifications = snapshot.data ?? [];
           if (notifications.isEmpty) {
             return const Center(
-                child: Text('Aucune notification dans Supabase.'));
+              child: Text('Aucune notification dans Supabase.'),
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -42,9 +45,11 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
               final notification = notifications[index] as Map<String, dynamic>;
               return ListTile(
                 leading: const Icon(Icons.notifications),
-                title: Text(notification['title']?.toString() ??
-                    notification['type']?.toString() ??
-                    'Notification'),
+                title: Text(
+                  notification['title']?.toString() ??
+                      notification['type']?.toString() ??
+                      'Notification',
+                ),
                 subtitle: Text(notification['body']?.toString() ?? ''),
               );
             },

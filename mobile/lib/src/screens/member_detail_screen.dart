@@ -29,8 +29,10 @@ class _MemberDetailScreenState extends State<MemberDetailScreen> {
       });
       setState(() => _message = 'Invitation envoyee.');
     } on ApiException catch (error) {
-      setState(() => _message =
-          error.body['detail']?.toString() ?? 'Invitation impossible.');
+      setState(
+        () => _message =
+            error.body['detail']?.toString() ?? 'Invitation impossible.',
+      );
     } finally {
       if (mounted) setState(() => _pending = false);
     }
@@ -40,8 +42,9 @@ class _MemberDetailScreenState extends State<MemberDetailScreen> {
   Widget build(BuildContext context) {
     final member =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-            {};
-    final name = member['display_name']?.toString() ??
+        {};
+    final name =
+        member['display_name']?.toString() ??
         member['username']?.toString() ??
         'Membre';
     return Scaffold(
@@ -52,22 +55,27 @@ class _MemberDetailScreenState extends State<MemberDetailScreen> {
           const CircleAvatar(radius: 42, child: Icon(Icons.person, size: 42)),
           const SizedBox(height: 16),
           Center(
-              child: Text(name,
-                  style: const TextStyle(
-                      fontSize: 22, fontWeight: FontWeight.w700))),
+            child: Text(
+              name,
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
+            ),
+          ),
           const SizedBox(height: 24),
           ListTile(
-              leading: const Icon(Icons.star),
-              title: const Text('Rang'),
-              subtitle: Text(member['rank_name']?.toString() ?? 'Novice I')),
+            leading: const Icon(Icons.star),
+            title: const Text('Rang'),
+            subtitle: Text(member['rank_name']?.toString() ?? 'Novice I'),
+          ),
           ListTile(
-              leading: const Icon(Icons.scoreboard),
-              title: const Text('Points'),
-              subtitle: Text('${member['points'] ?? 0}')),
+            leading: const Icon(Icons.scoreboard),
+            title: const Text('Points'),
+            subtitle: Text('${member['points'] ?? 0}'),
+          ),
           ListTile(
-              leading: const Icon(Icons.mail),
-              title: const Text('Email'),
-              subtitle: Text(member['email']?.toString() ?? '-')),
+            leading: const Icon(Icons.mail),
+            title: const Text('Email'),
+            subtitle: Text(member['email']?.toString() ?? '-'),
+          ),
           const SizedBox(height: 12),
           FilledButton.icon(
             onPressed: _pending || member['user_id'] == null
@@ -77,13 +85,15 @@ class _MemberDetailScreenState extends State<MemberDetailScreen> {
             label: Text(_pending ? 'Envoi...' : 'Envoyer invitation'),
           ),
           TextButton(
-              onPressed: () =>
-                  Navigator.pushNamed(context, InvitationsScreen.routeName),
-              child: const Text('Voir mes invitations')),
+            onPressed: () =>
+                Navigator.pushNamed(context, InvitationsScreen.routeName),
+            child: const Text('Voir mes invitations'),
+          ),
           if (_message != null)
             Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(_message!)),
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(_message!),
+            ),
         ],
       ),
     );

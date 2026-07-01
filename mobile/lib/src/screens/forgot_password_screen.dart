@@ -29,13 +29,17 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
       _message = null;
     });
     try {
-      final response = await _apiClient
-          .post('/app/auth/forgot-password/', {'email': _emailController.text});
-      setState(() =>
-          _message = response['detail']?.toString() ?? 'Demande envoyee.');
+      final response = await _apiClient.post('/app/auth/forgot-password/', {
+        'email': _emailController.text,
+      });
+      setState(
+        () => _message = response['detail']?.toString() ?? 'Demande envoyee.',
+      );
     } on ApiException catch (error) {
-      setState(() =>
-          _message = error.body['detail']?.toString() ?? 'Demande impossible.');
+      setState(
+        () => _message =
+            error.body['detail']?.toString() ?? 'Demande impossible.',
+      );
     } finally {
       if (mounted) setState(() => _pending = false);
     }
@@ -49,19 +53,23 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           const Text(
-              'Saisis ton email. Un administrateur pourra traiter la demande de reinitialisation.'),
+            'Saisis ton email. Un administrateur pourra traiter la demande de reinitialisation.',
+          ),
           const SizedBox(height: 16),
           TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email')),
+            controller: _emailController,
+            decoration: const InputDecoration(labelText: 'Email'),
+          ),
           const SizedBox(height: 16),
           FilledButton(
-              onPressed: _pending ? null : _submit,
-              child: Text(_pending ? 'Envoi...' : 'Envoyer')),
+            onPressed: _pending ? null : _submit,
+            child: Text(_pending ? 'Envoi...' : 'Envoyer'),
+          ),
           if (_message != null)
             Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: Text(_message!)),
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(_message!),
+            ),
         ],
       ),
     );

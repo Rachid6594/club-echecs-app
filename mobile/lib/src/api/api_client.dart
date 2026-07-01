@@ -12,8 +12,8 @@ class ApiClient {
       'MOBILE_API_BASE_URL',
       defaultValue: 'https://club-echecs-api.vercel.app/api',
     ),
-  })  : _httpClient = httpClient ?? http.Client(),
-        _sessionStore = sessionStore ?? SessionStore();
+  }) : _httpClient = httpClient ?? http.Client(),
+       _sessionStore = sessionStore ?? SessionStore();
 
   final http.Client _httpClient;
   final SessionStore _sessionStore;
@@ -93,7 +93,7 @@ class ApiClient {
             'display_name': 'Awa',
             'rank_name': 'Novice I',
             'points': 80,
-            'email': 'awa@test.local'
+            'email': 'awa@test.local',
           },
         ];
       }
@@ -103,7 +103,7 @@ class ApiClient {
             'id': 'invite-1',
             'other_display_name': 'Awa',
             'status': 'pending',
-            'message': 'Partie amicale'
+            'message': 'Partie amicale',
           },
         ];
       }
@@ -116,7 +116,7 @@ class ApiClient {
             'white_username': 'Joueur du club',
             'black_username': 'Awa',
             'status': 'completed',
-            'result': '1-0'
+            'result': '1-0',
           },
         ];
       }
@@ -131,7 +131,7 @@ class ApiClient {
           {
             'name': 'Coupe du Club',
             'format': 'single_elimination',
-            'status': 'registration_open'
+            'status': 'registration_open',
           },
         ];
       }
@@ -151,14 +151,16 @@ class ApiClient {
             'white_username': 'Blancs',
             'black_username': 'Noirs',
             'status': 'active',
-            'tournament_name': 'Table 1'
+            'tournament_name': 'Table 1',
           },
         ];
       }
       return <dynamic>[];
     }
-    final response = await _httpClient.get(Uri.parse('$baseUrl$path'),
-        headers: await _headers());
+    final response = await _httpClient.get(
+      Uri.parse('$baseUrl$path'),
+      headers: await _headers(),
+    );
     final body = _decode(response);
     return (body['results'] as List<dynamic>?) ?? <dynamic>[];
   }
@@ -171,19 +173,23 @@ class ApiClient {
             'display_name': 'Joueur du club',
             'rank_name': 'Novice I',
             'points': 0,
-            'email': 'joueur@test.local'
-          }
+            'email': 'joueur@test.local',
+          },
         };
       }
       return <String, dynamic>{};
     }
-    final response = await _httpClient.get(Uri.parse('$baseUrl$path'),
-        headers: await _headers());
+    final response = await _httpClient.get(
+      Uri.parse('$baseUrl$path'),
+      headers: await _headers(),
+    );
     return _decode(response);
   }
 
   Future<Map<String, dynamic>> post(
-      String path, Map<String, dynamic> body) async {
+    String path,
+    Map<String, dynamic> body,
+  ) async {
     if (const bool.fromEnvironment('USE_FAKE_AUTH')) {
       return {'ok': true};
     }

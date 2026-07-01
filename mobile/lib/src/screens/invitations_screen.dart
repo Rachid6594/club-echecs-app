@@ -13,10 +13,12 @@ class InvitationsScreen extends StatefulWidget {
 
 class _InvitationsScreenState extends State<InvitationsScreen> {
   final _apiClient = ApiClient();
-  late Future<List<dynamic>> _received =
-      _apiClient.getList('/app/invitations/received/');
-  late Future<List<dynamic>> _sent =
-      _apiClient.getList('/app/invitations/sent/');
+  late Future<List<dynamic>> _received = _apiClient.getList(
+    '/app/invitations/received/',
+  );
+  late Future<List<dynamic>> _sent = _apiClient.getList(
+    '/app/invitations/sent/',
+  );
 
   void _reload() {
     setState(() {
@@ -37,21 +39,27 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Invitations'),
-          bottom:
-              const TabBar(tabs: [Tab(text: 'Recues'), Tab(text: 'Envoyees')]),
+          bottom: const TabBar(
+            tabs: [
+              Tab(text: 'Recues'),
+              Tab(text: 'Envoyees'),
+            ],
+          ),
         ),
         body: TabBarView(
           children: [
             _InvitationList(
-                future: _received,
-                emptyText: 'Aucune invitation recue.',
-                onAction: _act,
-                received: true),
+              future: _received,
+              emptyText: 'Aucune invitation recue.',
+              onAction: _act,
+              received: true,
+            ),
             _InvitationList(
-                future: _sent,
-                emptyText: 'Aucune invitation envoyee.',
-                onAction: _act,
-                received: false),
+              future: _sent,
+              emptyText: 'Aucune invitation envoyee.',
+              onAction: _act,
+              received: false,
+            ),
           ],
         ),
       ),
@@ -60,11 +68,12 @@ class _InvitationsScreenState extends State<InvitationsScreen> {
 }
 
 class _InvitationList extends StatelessWidget {
-  const _InvitationList(
-      {required this.future,
-      required this.emptyText,
-      required this.onAction,
-      required this.received});
+  const _InvitationList({
+    required this.future,
+    required this.emptyText,
+    required this.onAction,
+    required this.received,
+  });
 
   final Future<List<dynamic>> future;
   final String emptyText;
@@ -81,7 +90,8 @@ class _InvitationList extends StatelessWidget {
         }
         if (snapshot.hasError) {
           return Center(
-              child: Text('Invitations indisponibles: ${snapshot.error}'));
+            child: Text('Invitations indisponibles: ${snapshot.error}'),
+          );
         }
         final invitations = snapshot.data ?? [];
         if (invitations.isEmpty) return Center(child: Text(emptyText));
@@ -95,11 +105,14 @@ class _InvitationList extends StatelessWidget {
             return ListTile(
               tileColor: Colors.white,
               shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8),
-                  side: const BorderSide(color: Color(0xFFE2E8F0))),
-              title: Text(invitation['other_display_name']?.toString() ??
-                  invitation['other_username']?.toString() ??
-                  'Membre'),
+                borderRadius: BorderRadius.circular(8),
+                side: const BorderSide(color: Color(0xFFE2E8F0)),
+              ),
+              title: Text(
+                invitation['other_display_name']?.toString() ??
+                    invitation['other_username']?.toString() ??
+                    'Membre',
+              ),
               subtitle: Text('$status | ${invitation['message'] ?? ''}'),
               trailing: status == 'pending'
                   ? Wrap(
@@ -107,22 +120,25 @@ class _InvitationList extends StatelessWidget {
                       children: [
                         if (received)
                           IconButton(
-                              tooltip: 'Accepter',
-                              onPressed: () => onAction(
-                                  invitation['id'].toString(), 'accept'),
-                              icon: const Icon(Icons.check)),
+                            tooltip: 'Accepter',
+                            onPressed: () =>
+                                onAction(invitation['id'].toString(), 'accept'),
+                            icon: const Icon(Icons.check),
+                          ),
                         if (received)
                           IconButton(
-                              tooltip: 'Refuser',
-                              onPressed: () => onAction(
-                                  invitation['id'].toString(), 'reject'),
-                              icon: const Icon(Icons.close)),
+                            tooltip: 'Refuser',
+                            onPressed: () =>
+                                onAction(invitation['id'].toString(), 'reject'),
+                            icon: const Icon(Icons.close),
+                          ),
                         if (!received)
                           IconButton(
-                              tooltip: 'Annuler',
-                              onPressed: () => onAction(
-                                  invitation['id'].toString(), 'cancel'),
-                              icon: const Icon(Icons.cancel)),
+                            tooltip: 'Annuler',
+                            onPressed: () =>
+                                onAction(invitation['id'].toString(), 'cancel'),
+                            icon: const Icon(Icons.cancel),
+                          ),
                       ],
                     )
                   : null,

@@ -49,8 +49,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
       if (!mounted) return;
       Navigator.pushReplacementNamed(context, HomeScreen.routeName);
     } on ApiException catch (error) {
-      setState(() => _message =
-          error.body['detail']?.toString() ?? 'Inscription impossible');
+      setState(
+        () => _message =
+            error.body['detail']?.toString() ?? 'Inscription impossible',
+      );
+    } catch (_) {
+      setState(
+        () => _message =
+            'Connexion au serveur impossible. Verifiez internet puis reessayez.',
+      );
     } finally {
       if (mounted) setState(() => _pending = false);
     }
@@ -64,21 +71,25 @@ class _RegisterScreenState extends State<RegisterScreen> {
         padding: const EdgeInsets.all(20),
         children: [
           TextField(
-              controller: _usernameController,
-              decoration: const InputDecoration(labelText: 'Nom utilisateur')),
+            controller: _usernameController,
+            decoration: const InputDecoration(labelText: 'Nom utilisateur'),
+          ),
           const SizedBox(height: 12),
           TextField(
-              controller: _displayNameController,
-              decoration: const InputDecoration(labelText: 'Nom affiche')),
+            controller: _displayNameController,
+            decoration: const InputDecoration(labelText: 'Nom affiche'),
+          ),
           const SizedBox(height: 12),
           TextField(
-              controller: _emailController,
-              decoration: const InputDecoration(labelText: 'Email')),
+            controller: _emailController,
+            decoration: const InputDecoration(labelText: 'Email'),
+          ),
           const SizedBox(height: 12),
           TextField(
-              controller: _passwordController,
-              obscureText: true,
-              decoration: const InputDecoration(labelText: 'Mot de passe')),
+            controller: _passwordController,
+            obscureText: true,
+            decoration: const InputDecoration(labelText: 'Mot de passe'),
+          ),
           const SizedBox(height: 20),
           FilledButton(
             onPressed: _pending ? null : _register,
@@ -86,9 +97,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
           ),
           if (_message != null)
             Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child:
-                    Text(_message!, style: const TextStyle(color: Colors.red))),
+              padding: const EdgeInsets.only(top: 12),
+              child: Text(_message!, style: const TextStyle(color: Colors.red)),
+            ),
         ],
       ),
     );

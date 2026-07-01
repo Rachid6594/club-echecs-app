@@ -12,8 +12,9 @@ class BadgesScreen extends StatefulWidget {
 }
 
 class _BadgesScreenState extends State<BadgesScreen> {
-  late final Future<List<dynamic>> _badges =
-      ApiClient().getList('/app/badges/');
+  late final Future<List<dynamic>> _badges = ApiClient().getList(
+    '/app/badges/',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,8 @@ class _BadgesScreenState extends State<BadgesScreen> {
           }
           if (snapshot.hasError) {
             return Center(
-                child: Text('Badges indisponibles: ${snapshot.error}'));
+              child: Text('Badges indisponibles: ${snapshot.error}'),
+            );
           }
           final badges = snapshot.data ?? [];
           if (badges.isEmpty) {
@@ -42,8 +44,10 @@ class _BadgesScreenState extends State<BadgesScreen> {
             children: [
               for (final item in badges)
                 _BadgeTile(
-                    label: (item as Map<String, dynamic>)['name']?.toString() ??
-                        'Badge'),
+                  label:
+                      (item as Map<String, dynamic>)['name']?.toString() ??
+                      'Badge',
+                ),
             ],
           );
         },
@@ -61,18 +65,24 @@ class _BadgeTile extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE2E8F0))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          const Icon(Icons.workspace_premium,
-              size: 36, color: Color(0xFFD4AF37)),
+          const Icon(
+            Icons.workspace_premium,
+            size: 36,
+            color: Color(0xFFD4AF37),
+          ),
           const SizedBox(height: 10),
-          Text(label,
-              textAlign: TextAlign.center,
-              style: const TextStyle(fontWeight: FontWeight.w600)),
+          Text(
+            label,
+            textAlign: TextAlign.center,
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
         ],
       ),
     );

@@ -27,7 +27,7 @@ void main() {
     await tester.tap(find.text('Creer mon compte'));
     await tester.pumpAndSettle();
 
-    expect(find.text('Accueil joueur'), findsOneWidget);
+    expect(find.text('Bienvenue au club'), findsOneWidget);
     expect(find.text('Membres'), findsOneWidget);
   });
 
@@ -52,7 +52,7 @@ void main() {
     await tester.tap(find.text('Se connecter'));
     await tester.pumpAndSettle();
 
-    await tester.tap(find.text('Parties'));
+    await tester.tap(find.text('Partie rapide'));
     await tester.pumpAndSettle();
 
     expect(find.text('Echiquier'), findsOneWidget);
@@ -92,7 +92,7 @@ void main() {
     await tester.tap(find.text('Se connecter'));
     await tester.pumpAndSettle();
 
-    await tester.drag(find.byType(GridView), const Offset(0, -260));
+    await tester.drag(find.byType(ListView), const Offset(0, -520));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Tournois'));
     await tester.pumpAndSettle();
@@ -110,7 +110,7 @@ void main() {
     await tester.tap(find.text('Se connecter'));
     await tester.pumpAndSettle();
 
-    await tester.drag(find.byType(GridView), const Offset(0, -320));
+    await tester.drag(find.byType(ListView), const Offset(0, -520));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Classement'));
     await tester.pumpAndSettle();
@@ -119,7 +119,7 @@ void main() {
     Navigator.of(tester.element(find.text('Classement general'))).pop();
     await tester.pumpAndSettle();
 
-    await tester.drag(find.byType(GridView), const Offset(0, -220));
+    await tester.drag(find.byType(ListView), const Offset(0, -280));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Badges'));
     await tester.pumpAndSettle();
@@ -128,7 +128,7 @@ void main() {
     Navigator.of(tester.element(find.text('Badges'))).pop();
     await tester.pumpAndSettle();
 
-    await tester.drag(find.byType(GridView), const Offset(0, -220));
+    await tester.drag(find.byType(ListView), const Offset(0, -280));
     await tester.pumpAndSettle();
     await tester.tap(find.text('Notifications'));
     await tester.pumpAndSettle();

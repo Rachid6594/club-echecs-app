@@ -13,8 +13,9 @@ class LiveMatchesScreen extends StatefulWidget {
 }
 
 class _LiveMatchesScreenState extends State<LiveMatchesScreen> {
-  late final Future<List<dynamic>> _matches =
-      ApiClient().getList('/app/live-matches/');
+  late final Future<List<dynamic>> _matches = ApiClient().getList(
+    '/app/live-matches/',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -28,12 +29,14 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen> {
           }
           if (snapshot.hasError) {
             return Center(
-                child: Text('Matchs indisponibles: ${snapshot.error}'));
+              child: Text('Matchs indisponibles: ${snapshot.error}'),
+            );
           }
           final matches = snapshot.data ?? [];
           if (matches.isEmpty) {
             return const Center(
-                child: Text('Aucun match en direct dans Supabase.'));
+              child: Text('Aucun match en direct dans Supabase.'),
+            );
           }
           return ListView.separated(
             padding: const EdgeInsets.all(16),
@@ -44,17 +47,22 @@ class _LiveMatchesScreenState extends State<LiveMatchesScreen> {
               return ListTile(
                 tileColor: Colors.white,
                 shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                    side: const BorderSide(color: Color(0xFFE2E8F0))),
+                  borderRadius: BorderRadius.circular(8),
+                  side: const BorderSide(color: Color(0xFFE2E8F0)),
+                ),
                 leading: const Icon(Icons.visibility, color: Color(0xFF2563EB)),
-                title: Text(match['tournament_name']?.toString() ??
-                    'Table ${index + 1}'),
+                title: Text(
+                  match['tournament_name']?.toString() ?? 'Table ${index + 1}',
+                ),
                 subtitle: Text(
-                    '${match['white_username'] ?? 'Blancs'} vs ${match['black_username'] ?? 'Noirs'}'),
+                  '${match['white_username'] ?? 'Blancs'} vs ${match['black_username'] ?? 'Noirs'}',
+                ),
                 trailing: Text(match['status']?.toString() ?? ''),
                 onTap: () => Navigator.pushNamed(
-                    context, SpectatorScreen.routeName,
-                    arguments: match),
+                  context,
+                  SpectatorScreen.routeName,
+                  arguments: match,
+                ),
               );
             },
           );

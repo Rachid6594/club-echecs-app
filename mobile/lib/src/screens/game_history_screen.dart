@@ -12,8 +12,9 @@ class GameHistoryScreen extends StatefulWidget {
 }
 
 class _GameHistoryScreenState extends State<GameHistoryScreen> {
-  late final Future<List<dynamic>> _games =
-      ApiClient().getList('/app/games/history/');
+  late final Future<List<dynamic>> _games = ApiClient().getList(
+    '/app/games/history/',
+  );
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,8 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
           }
           if (snapshot.hasError) {
             return Center(
-                child: Text('Historique indisponible: ${snapshot.error}'));
+              child: Text('Historique indisponible: ${snapshot.error}'),
+            );
           }
           final games = snapshot.data ?? [];
           if (games.isEmpty) {
@@ -42,9 +44,11 @@ class _GameHistoryScreenState extends State<GameHistoryScreen> {
               return ListTile(
                 leading: const Icon(Icons.history),
                 title: Text(
-                    '${game['white_username'] ?? 'Blancs'} vs ${game['black_username'] ?? 'Noirs'}'),
-                subtitle:
-                    Text('${game['status']} | ${game['result'] ?? 'en cours'}'),
+                  '${game['white_username'] ?? 'Blancs'} vs ${game['black_username'] ?? 'Noirs'}',
+                ),
+                subtitle: Text(
+                  '${game['status']} | ${game['result'] ?? 'en cours'}',
+                ),
               );
             },
           );

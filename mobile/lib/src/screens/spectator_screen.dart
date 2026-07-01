@@ -9,7 +9,7 @@ class SpectatorScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     final match =
         ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>? ??
-            {};
+        {};
     final white = match['white_username']?.toString() ?? 'Blancs';
     final black = match['black_username']?.toString() ?? 'Noirs';
     final status = match['status']?.toString() ?? 'active';
@@ -28,8 +28,9 @@ class SpectatorScreen extends StatelessWidget {
             aspectRatio: 1,
             child: DecoratedBox(
               decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: const Color(0xFFE2E8F0))),
+                borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: const Color(0xFFE2E8F0)),
+              ),
               child: const Center(child: Text('Echiquier spectateur')),
             ),
           ),

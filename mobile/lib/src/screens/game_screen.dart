@@ -19,7 +19,8 @@ class GameScreen extends StatelessWidget {
             child: GridView.builder(
               physics: const NeverScrollableScrollPhysics(),
               gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 8),
+                crossAxisCount: 8,
+              ),
               itemCount: 64,
               itemBuilder: (context, index) {
                 final row = index ~/ 8;
@@ -27,14 +28,19 @@ class GameScreen extends StatelessWidget {
                 final dark = (row + col).isOdd;
                 return DecoratedBox(
                   decoration: BoxDecoration(
-                      color: dark
-                          ? const Color(0xFF1E293B)
-                          : const Color(0xFFF1F5F9)),
+                    color: dark
+                        ? const Color(0xFF1E293B)
+                        : const Color(0xFFF1F5F9),
+                  ),
                   child: Center(
-                      child: Text(_pieceAt(index),
-                          style: TextStyle(
-                              fontSize: 22,
-                              color: dark ? Colors.white : Colors.black87))),
+                    child: Text(
+                      _pieceAt(index),
+                      style: TextStyle(
+                        fontSize: 22,
+                        color: dark ? Colors.white : Colors.black87,
+                      ),
+                    ),
+                  ),
                 );
               },
             ),
@@ -43,14 +49,18 @@ class GameScreen extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                  child: OutlinedButton(
-                      onPressed: () => _showDrawDialog(context),
-                      child: const Text('Proposer nul'))),
+                child: OutlinedButton(
+                  onPressed: () => _showDrawDialog(context),
+                  child: const Text('Proposer nul'),
+                ),
+              ),
               const SizedBox(width: 12),
               Expanded(
-                  child: FilledButton.tonal(
-                      onPressed: () => _showResignDialog(context),
-                      child: const Text('Abandonner'))),
+                child: FilledButton.tonal(
+                  onPressed: () => _showResignDialog(context),
+                  child: const Text('Abandonner'),
+                ),
+              ),
             ],
           ),
         ],
@@ -101,15 +111,18 @@ class GameScreen extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         title: const Text('Proposition de nul'),
-        content:
-            const Text('Envoyer une proposition de nul a votre adversaire ?'),
+        content: const Text(
+          'Envoyer une proposition de nul a votre adversaire ?',
+        ),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Annuler')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Annuler'),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Envoyer'))
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Envoyer'),
+          ),
         ],
       ),
     );
@@ -123,10 +136,13 @@ class GameScreen extends StatelessWidget {
         content: const Text('Confirmer abandonner cette partie ?'),
         actions: [
           TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: const Text('Non')),
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Non'),
+          ),
           FilledButton(
-              onPressed: () => Navigator.pop(context), child: const Text('Oui'))
+            onPressed: () => Navigator.pop(context),
+            child: const Text('Oui'),
+          ),
         ],
       ),
     );
@@ -140,9 +156,13 @@ class _ClockPanel extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: const [
-        Expanded(child: _ClockCard(label: 'Blancs', time: '05:00')),
+        Expanded(
+          child: _ClockCard(label: 'Blancs', time: '05:00'),
+        ),
         SizedBox(width: 12),
-        Expanded(child: _ClockCard(label: 'Noirs', time: '05:00')),
+        Expanded(
+          child: _ClockCard(label: 'Noirs', time: '05:00'),
+        ),
       ],
     );
   }
@@ -158,16 +178,21 @@ class _ClockCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(8),
-          border: Border.all(color: const Color(0xFFE2E8F0))),
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(8),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
       child: Padding(
         padding: const EdgeInsets.all(14),
-        child: Column(children: [
-          Text(label),
-          Text(time,
-              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700))
-        ]),
+        child: Column(
+          children: [
+            Text(label),
+            Text(
+              time,
+              style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
+            ),
+          ],
+        ),
       ),
     );
   }

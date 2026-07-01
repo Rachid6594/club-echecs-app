@@ -36,6 +36,7 @@ class ClubEchecsApp extends StatelessWidget {
           surface: const Color(0xFFF8FAFC),
         ),
         scaffoldBackgroundColor: const Color(0xFFF8FAFC),
+        splashFactory: InkRipple.splashFactory,
         useMaterial3: true,
       ),
       initialRoute: SplashScreen.routeName,
